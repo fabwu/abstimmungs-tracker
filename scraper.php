@@ -20,29 +20,29 @@ try {
     foreach ($abstimmungen->result->resources as $idx => $abstimmungJson) {
         fwrite(STDOUT, sprintf("\rProcessing %s/%s", $idx + 1, count($abstimmungen->result->resources)));
 
-        $abstimmungUrl = USE_DUMMY_DATA ? 'test-data/vorlage.json' : $abstimmungJson->url;
-        $abstimmungDetails = json_decode(loadJson($abstimmungUrl));
-
         $dbh->beginTransaction();
 
         $abstimmung = $abstimmungRepository->findByExternalId($abstimmungJson->id);
         if ($abstimmung == null) {
+            $abstimmungUrl = USE_DUMMY_DATA ? 'test-data/vorlage.json' : $abstimmungJson->url;
+            $abstimmungDetails = json_decode(loadJson($abstimmungUrl));
+
             $abstimmung = new Abstimmung();
             $abstimmung->externalId = $abstimmungJson->id;
             $abstimmung->title = $abstimmungJson->title->de;
             $abstimmung->date = DateTimeImmutable::createFromFormat('Ymd', $abstimmungDetails->abstimmtag);
             $abstimmung = $abstimmungRepository->insert($abstimmung);
-        }
 
-        foreach ($abstimmungDetails->schweiz->vorlagen as $vorlageJson) {
-            $vorlage = $vorlageRepository->findByExternalId($vorlageJson->vorlagenId);
-            if ($vorlage == null) {
-                $vorlage = new Vorlage();
-                $vorlage->abstimmungId = $abstimmung->id;
-                $vorlage->externalId = $vorlageJson->vorlagenId;
-                $vorlage->title = $vorlageJson->vorlagenTitel[0]->text;
-                $vorlage->vorlageAngenommen = $vorlageJson->vorlageAngenommen;
-                $vorlageRepository->insert($vorlage);
+            foreach ($abstimmungDetails->schweiz->vorlagen as $vorlageJson) {
+                $vorlage = $vorlageRepository->findByExternalId($vorlageJson->vorlagenId);
+                if ($vorlage == null) {
+                    $vorlage = new Vorlage();
+                    $vorlage->abstimmungId = $abstimmung->id;
+                    $vorlage->externalId = $vorlageJson->vorlagenId;
+                    $vorlage->title = $vorlageJson->vorlagenTitel[0]->text;
+                    $vorlage->vorlageAngenommen = $vorlageJson->vorlageAngenommen;
+                    $vorlageRepository->insert($vorlage);
+                }
             }
         }
 
