@@ -2,6 +2,7 @@
 
 use App\Abstimmung;
 use App\AbstimmungRepository;
+use App\Database;
 use App\Vorlage;
 use App\VorlageRepository;
 
@@ -10,9 +11,9 @@ require 'vendor/autoload.php';
 const USE_DUMMY_DATA = false;
 
 try {
-    $dbh = new PDO('sqlite:db.sq3');
-    $abstimmungRepository = new AbstimmungRepository($dbh);
-    $vorlageRepository = new VorlageRepository($dbh);
+    $database = new Database();
+    $abstimmungRepository = new AbstimmungRepository($database->dbh);
+    $vorlageRepository = new VorlageRepository($database->dbh);
 
     $overviewUrl = USE_DUMMY_DATA ? 'test-data/overview.json' :
         'https://ckan.opendata.swiss/api/3/action/package_show?id=echtzeitdaten-am-abstimmungstag-zu-eidgenoessischen-abstimmungsvorlagen';
