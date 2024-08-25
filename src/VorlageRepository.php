@@ -29,19 +29,41 @@ class VorlageRepository
 
     function findByExternalId(string $externalId): ?Vorlage
     {
-        $sql = 'SELECT id, abstimmung_id, external_id, title, vorlage_angenommen FROM vorlage WHERE external_id = ? LIMIT 1';
+        $sql = 'SELECT * FROM vorlage WHERE external_id = ? LIMIT 1';
         $stmt = $this->dbh->prepare($sql);
         $stmt->execute([$externalId]);
-        $columns = $stmt->fetch();
-        if ($columns) {
-            $vorlage = new Vorlage();
-            $vorlage->id = $columns['id'];
-            $vorlage->externalId = $columns['external_id'];
-            $vorlage->title = $columns['title'];
-            $vorlage->vorlageAngenommen = $columns['vorlage_angenommen'];
-            return $vorlage;
+        $row = $stmt->fetch();
+        if ($row) {
+            return $this->map($row);
         } else {
             return null;
         }
+    }
+
+    public function findByAbstimmungId(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+        $inQuery = str_repeat('?,', count($ids) - 1) . '?';
+        $sql = "SELECT * FROM vorlage WHERE abstimmung_id IN ($inQuery)";
+        $stmt = $this->dbh->prepare($sql);
+        $stmt->execute($ids);
+        $rows = $stmt->fetchAll();
+        $vorlagen = [];
+        foreach ($rows as $row) {
+            $vorlagen[] = $this->map($row);
+        }
+        return $vorlagen;
+    }
+
+    private function map(mixed $row): Vorlage
+    {
+        $vorlage = new Vorlage();
+        $vorlage->id = $row['id'];
+        $vorlage->externalId = $row['external_id'];
+        $vorlage->title = $row['title'];
+        $vorlage->vorlageAngenommen = $row['vorlage_angenommen'];
+        return $vorlage;
     }
 }
