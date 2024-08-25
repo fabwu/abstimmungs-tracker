@@ -19,9 +19,9 @@ class VorlageRepository
                     VALUES (:abstimmung_id, :external_id, :title, :vorlage_angenommen)";
         $stmt = $this->dbh->prepare($sql);
         $stmt->bindValue(':abstimmung_id', $vorlage->abstimmungId);
-        $stmt->bindParam(':external_id', $vorlage->externalId);
-        $stmt->bindParam(':title', $vorlage->title);
-        $stmt->bindValue(':vorlage_angenommen', $vorlage->vorlageAngenommen);
+        $stmt->bindValue(':external_id', $vorlage->externalId);
+        $stmt->bindValue(':title', $vorlage->title);
+        $stmt->bindValue(':vorlage_angenommen', $vorlage->vorlageAngenommen, PDO::PARAM_BOOL);
         $stmt->execute();
         $vorlage->id = $this->dbh->lastInsertId();
         return $vorlage;

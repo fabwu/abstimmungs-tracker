@@ -1,5 +1,5 @@
-DROP TABLE abstimmung;
-DROP TABLE vorlage;
+DROP TABLE IF EXISTS abstimmung;
+DROP TABLE IF EXISTS vorlage;
 
 CREATE TABLE IF NOT EXISTS abstimmung
 (

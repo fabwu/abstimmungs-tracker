@@ -7,14 +7,7 @@ use App\VorlageRepository;
 
 require 'vendor/autoload.php';
 
-/*
- * 1. Download overview JSON
- * 2. Check if new Abstimmung is available (compare id)
- * 3. Save new Abstimmung
- * 4. Send email to user for new Abstimmung
- */
-
-const USE_DUMMY_DATA = true;
+const USE_DUMMY_DATA = false;
 
 try {
     $dbh = new PDO('sqlite:db.sq3');
@@ -24,9 +17,13 @@ try {
     $overviewUrl = USE_DUMMY_DATA ? 'test-data/overview.json' :
         'https://ckan.opendata.swiss/api/3/action/package_show?id=echtzeitdaten-am-abstimmungstag-zu-eidgenoessischen-abstimmungsvorlagen';
     $abstimmungen = json_decode(loadJson($overviewUrl));
-    foreach ($abstimmungen->result->resources as $abstimmungJson) {
+    foreach ($abstimmungen->result->resources as $idx => $abstimmungJson) {
+        fwrite(STDOUT, sprintf("\rProcessing %s/%s", $idx + 1, count($abstimmungen->result->resources)));
+
         $abstimmungUrl = USE_DUMMY_DATA ? 'test-data/vorlage.json' : $abstimmungJson->url;
         $abstimmungDetails = json_decode(loadJson($abstimmungUrl));
+
+        $dbh->beginTransaction();
 
         $abstimmung = $abstimmungRepository->findByExternalId($abstimmungJson->id);
         if ($abstimmung == null) {
@@ -48,6 +45,8 @@ try {
                 $vorlageRepository->insert($vorlage);
             }
         }
+
+        $dbh->commit();
     }
 } catch (Exception $e) {
     var_dump($e);

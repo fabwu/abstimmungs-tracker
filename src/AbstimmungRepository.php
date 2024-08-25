@@ -18,8 +18,8 @@ class AbstimmungRepository
     {
         $sql = "INSERT INTO abstimmung (external_id, title, date) VALUES (:external_id, :title, :date)";
         $stmt = $this->dbh->prepare($sql);
-        $stmt->bindParam(':external_id', $abstimmung->externalId);
-        $stmt->bindParam(':title', $abstimmung->title);
+        $stmt->bindValue(':external_id', $abstimmung->externalId);
+        $stmt->bindValue(':title', $abstimmung->title);
         $stmt->bindValue(':date', $abstimmung->date->setTime(0, 0, 0)->format(DATE_ATOM));
         $stmt->execute();
         $abstimmung->id = $this->dbh->lastInsertId();
